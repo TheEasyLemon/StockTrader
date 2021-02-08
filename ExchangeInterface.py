@@ -1,5 +1,5 @@
 """
-Provides ExchangeInterface.
+Provides ExchangeInterface. Currently is able to trade on Binance and Coinbase Pro.
 """
 import pandas as pd
 import ccxt
