@@ -1,5 +1,10 @@
 """Provides the trainer client."""
 import numpy as np
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import LSTM, Dense
+from tensorflow.keras.optimizers import Adam
+import matplotlib.pyplot as plt
+plt.style.use('bmh') # https://matplotlib.org/gallery/style_sheets/style_sheets_reference.html
 
 
 class Trainer:
@@ -30,9 +35,9 @@ class Trainer:
         """
         labels = []
 
-        for ii in range(len(self.feats) - 1):
-            open_price = self.feats['open'][ii + 1]
-            close_price = self.feats['close'][ii + 1]
+        for i in range(len(self.feats) - 1):
+            open_price = self.feats['open'][i + 1]
+            close_price = self.feats['close'][i + 1]
             buy_fee_multiplier = 1 + self.fee
             sell_fee_multiplier = 1 - self.fee
 
@@ -55,3 +60,75 @@ class Trainer:
         y[np.arange(x.size), x] = 1
 
         return y
+
+    def make_model(self):
+        # This creates the LSTM model.  Lots of room for innovation here.
+        self.model = Sequential()
+        self.model.add(LSTM(
+            units=100,
+            activation='tanh',
+            input_shape=(self.window_size, self.num_feats)))
+        self.model.add(Dense(units=3,
+                             activation='softmax'))
+        self.model.compile(loss='categorical_crossentropy',
+                           optimizer=Adam(lr=0.001),
+                           metrics=['accuracy'])
+        self.model.summary()
+
+        return self.model
+
+    def split_data(self):
+        train_X = self.feats_scaled.iloc[:self.num_train]
+        train_y = self.classes[:self.num_train]
+        test_X = self.feats_scaled.iloc[self.num_train:self.num_train + self.num_test]
+        test_y = self.classes[self.num_train:self.num_train + self.num_test]
+
+        return train_X, train_y, test_X, test_y
+
+    def format_data(self, X):
+        # Creating a 3D array to hold all the data samples
+        X_tensor = np.zeros((X.shape[0] - self.window_size, self.window_size, self.num_feats))
+        for ii in range(X_tensor.shape[0] - self.window_size):
+            X_tensor[ii, :, :] = X[ii:ii + self.window_size, :]
+
+        return X_tensor
+
+    def train_model(self):
+        train_X, train_y, test_X, test_y = self.split_data()
+
+        # Training data
+        train_X = np.array(train_X)
+        train_X = self.format_data(train_X)
+        train_y = np.array(train_y[self.window_size:])
+        train_y = self.one_hot_encode(train_y)
+
+        # Testing data
+        test_X = np.array(test_X)
+        test_X = self.format_data(test_X)
+        test_y = np.array(test_y[self.window_size:])
+        test_y = self.one_hot_encode(test_y)
+
+        # Train the model
+        training_results = self.model.fit(train_X, train_y, validation_data=(test_X, test_y), epochs=10, batch_size=1)
+
+        return training_results
+
+    def visualize_training_results(self, results):
+        history = results.history
+        plt.figure(figsize=(10, 5))
+        plt.plot(history['val_loss'])
+        plt.plot(history['loss'])
+        plt.legend(['val_loss', 'loss'])
+        plt.title('Loss')
+        plt.xlabel('Epochs')
+        plt.ylabel('Loss')
+        plt.show()
+
+        plt.figure(figsize=(10, 5))
+        plt.plot(history['val_accuracy'])
+        plt.plot(history['accuracy'])
+        plt.legend(['val_accuracy', 'accuracy'])
+        plt.title('Accuracy')
+        plt.xlabel('Epochs')
+        plt.ylabel('Accuracy')
+        plt.show()
