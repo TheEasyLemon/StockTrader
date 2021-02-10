@@ -50,7 +50,7 @@ class ExchangeInterface:
                     'rateLimit': 200
                 })
         else:
-            raise Exception(f"{exchange} is a supported exchange.")
+            raise Exception(f"{exchange} is not a supported exchange.")
 
         self.client.load_markets()
 

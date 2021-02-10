@@ -5,10 +5,10 @@ import time
 from sklearn.preprocessing import RobustScaler
 import pandas as pd
 
-from ExchangeInterface import ExchangeInterface
-from TA import TA
-from Trainer import Trainer
-from Backtester import Backtester
+from ML_Workshop.ExchangeInterface import ExchangeInterface
+from ML_Workshop.TA import TA
+from ML_Workshop.Trainer import Trainer
+from ML_Workshop.Backtester import Backtester
 
 if __name__ == '__main__':
     # Trading parameters

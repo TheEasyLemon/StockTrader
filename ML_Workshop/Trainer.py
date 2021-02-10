@@ -52,7 +52,14 @@ class Trainer:
 
     def one_hot_encode(self, x):
         """
-        Bruh literally what is this supposed to do
+        For every element i in x, create a row vector x.max() long and
+        have the ith element in that vector be one, with the rest zeros.
+        Horizontal concatenate for a 2D matrix.
+
+        [ 0 1 2 ] -> [ 1 0 0 ;
+                       0 1 0 ;
+                       0 0 1 ]
+
         :param x: a 1D numpy array
         :return y: a 2D numpy array
         """
@@ -63,7 +70,14 @@ class Trainer:
 
     def make_model(self):
         # This creates the LSTM model.  Lots of room for innovation here.
+
+        """
+        Tensorflow is a platform for machine learning. It provides many models that we can use.
+        Sequential groups a linear stack of layers into a tk.keras.Model, the primary object that
+        stores the model.
+        """
         self.model = Sequential()
+
         self.model.add(LSTM(
             units=100,
             activation='tanh',

@@ -1,3 +1,4 @@
 # Project exclude paths
 /venv/
 .idea/
+/ML_Workshop/__pycache__/
